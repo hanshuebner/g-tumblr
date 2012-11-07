@@ -7,7 +7,8 @@
            #:camera-type
            #:id
            #:quantity
-           #:parse-file))
+           #:parse-file
+           #:image-pathname))
 
 (in-package :dpof)
 

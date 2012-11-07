@@ -1,10 +1,5 @@
 ;; -*- Lisp -*-
 
-;; Use print requests in DPOF format on SD-Card to upload selected
-;; pictures to tumblr
-
-;; DPOF summary: http://panasonic.jp/dc/dpof_110/white_e.htm
-
 (defpackage :g-tumblr
   (:use :cl))
 

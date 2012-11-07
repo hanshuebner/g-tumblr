@@ -13,3 +13,5 @@ implementations.
 ## Links
 
  * http://stackoverflow.com/questions/12409458/detect-when-a-volume-is-mounted-on-os-x
+ * [DPOF summary](http://panasonic.jp/dc/dpof_110/white_e.htm)
+
