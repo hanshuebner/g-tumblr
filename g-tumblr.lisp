@@ -1,5 +1,7 @@
 ;; -*- Lisp -*-
 
+;; This is mostly verbatim from http://trac.clozure.com/ccl/wiki/Cocoa/DiskInsertions
+
 (defpackage :g-tumblr
   (:use :cl))
 
