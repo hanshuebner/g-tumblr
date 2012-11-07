@@ -9,3 +9,7 @@ In order to poll for the insertion of an SD-Card, OSX specific APIs
 are used.  At this point, this program thus is OSX-specific and, due
 to its usage of CCL specific APIs, not portable to other Lisp
 implementations.
+
+## Links
+
+ * http://stackoverflow.com/questions/12409458/detect-when-a-volume-is-mounted-on-os-x
