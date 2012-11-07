@@ -1,5 +1,7 @@
 # g-tumbler - Automatically upload images from SD-Card to tumblr
 
+NOTE:  THIS IS WORK IN PROCESS AND NOTHING IS FINISHED YET
+
 Some cameras have functionality to queue images for printing from the
 built-in UI.  Such print jobs are stored as DPOF files on the camera's
 mass storage medium.  This program reads DPOF files and uploads images
