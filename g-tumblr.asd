@@ -2,5 +2,9 @@
     :description "Camera to tumblr uploader"
   :serial t
   :depends-on (:alexandria
-               :cl-ppcre)
-  :components ((:file "emerald")))
+               :cl-ppcre
+               :local-time
+               :cl-oauth)
+  :components ((:file "dpof")
+               (:file "mount-notification")
+               (:file "g-tumblr")))

@@ -5,6 +5,7 @@
   (:export #:revision
            #:date
            #:camera-type
+           #:jobs
            #:id
            #:quantity
            #:parse-file
