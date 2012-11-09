@@ -38,6 +38,18 @@
             (cl-gd:write-image-to-file output-pathname :image rescaled-image :if-exists :supersede))))
       output-pathname)))
 
+(defparameter *get-access-token-endpoint* "http://www.tumblr.com/oauth/access_token")
+
+(defun configure (consumer-key consumer-secret username password)
+  (let* ((consumer-token (cl-oauth:make-consumer-token :key consumer-key :secret consumer-secret))
+         (access-token (cl-oauth:obtain-access-token *get-access-token-endpoint* nil :consumer-token consumer-token :xauth-username username :xauth-password password)))
+    (with-open-file (f "~/.g-tumblr-config.lisp" :direction :output :if-exists :new-version)
+      (write (list :consumer-key (cl-oauth:token-key consumer-token)
+                   :consumer-secret (cl-oauth:token-secret consumer-token)
+                   :access-key (cl-oauth:token-key access-token)
+                   :access-secret (cl-oauth:token-secret access-token))
+             :stream f))))
+
 (defun post-image (pathname)
   (format t "pathname: ~A~%" pathname)
   (temporary-file:with-open-temporary-file (rescaled-image-pathname :template (format nil "temporary-files:%.~A" (pathname-type pathname)))
