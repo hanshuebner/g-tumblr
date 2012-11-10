@@ -1,4 +1,4 @@
-# g-tumbler - Automatically upload images from SD-Card to tumblr
+# g-tumblr - Automatically upload images from SD-Card to tumblr
 
 NOTE:  THIS IS WORK IN PROCESS AND NOTHING IS FINISHED YET
 
