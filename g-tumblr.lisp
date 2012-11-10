@@ -38,17 +38,68 @@
             (cl-gd:write-image-to-file output-pathname :image rescaled-image :if-exists :supersede))))
       output-pathname)))
 
+(defparameter *get-request-token-endpoint* "http://www.tumblr.com/oauth/request_token")
 (defparameter *get-access-token-endpoint* "http://www.tumblr.com/oauth/access_token")
+(defparameter *authorize-endpoint* "http://www.tumblr.com/oauth/authorize")
+(defparameter *hunchentoot-port* 10721 "Port to use for Hunchentoot as callback destination on localhost")
+(defvar *queue* nil "Queue to send received oauth_verifier over")
 
-(defun configure (consumer-key consumer-secret username password)
+(defmacro with-temporary-webserver ((acceptor) &body body)
+  `(unwind-protect
+        (progn
+          (hunchentoot:start ,acceptor)
+          ,@body)
+     (hunchentoot:stop ,acceptor)))
+
+(defmacro with-temporary-queue ((queue) &body body)
+  `(unwind-protect
+        (progn
+          (setf ,queue (lparallel.queue:make-queue))
+          ,@body)
+     (setf ,queue nil)))
+
+(defmacro with-temporary-kernel ((count) &body body)
+  `(let ((lparallel:*kernel* (lparallel:make-kernel ,count)))
+     (unwind-protect
+          (progn
+            ,@body)
+       (lparallel:end-kernel :wait nil))))
+
+(hunchentoot:define-easy-handler (callback :uri "/") (oauth_verifier)
+  (lparallel.queue:push-queue oauth_verifier *queue*)
+  "Your access token has been generated, you can close this window.")
+
+;; According to tumblr support, xAuth permission is granted only to
+;; mass-deployed applications.  For single user applications like this
+;; one, you are supposed to generate an access token using the
+;; standard OAuth flow, which is implemented by the below or by
+;; https://gist.github.com/2603387
+
+(defun configure (consumer-key consumer-secret)
   (let* ((consumer-token (cl-oauth:make-consumer-token :key consumer-key :secret consumer-secret))
-         (access-token (cl-oauth:obtain-access-token *get-access-token-endpoint* nil :consumer-token consumer-token :xauth-username username :xauth-password password)))
-    (with-open-file (f "~/.g-tumblr-config.lisp" :direction :output :if-exists :new-version)
-      (write (list :consumer-key (cl-oauth:token-key consumer-token)
-                   :consumer-secret (cl-oauth:token-secret consumer-token)
-                   :access-key (cl-oauth:token-key access-token)
-                   :access-secret (cl-oauth:token-secret access-token))
-             :stream f))))
+         (callback-uri (format nil "http://localhost:~A/" *hunchentoot-port*))
+         (request-token (cl-oauth:obtain-request-token *get-request-token-endpoint* consumer-token
+                                                       :callback-uri callback-uri))
+         (auth-uri (cl-oauth:make-authorization-uri *authorize-endpoint* request-token))
+         (acceptor (make-instance 'hunchentoot:easy-acceptor :port *hunchentoot-port*)))
+    (with-temporary-kernel (2)
+      (with-temporary-queue (*queue*)
+        (with-temporary-webserver (acceptor)
+          (inferior-shell:run (format nil "open ~A" (puri:uri auth-uri)))
+          (format t "Please authorize the access on this URL:~%~A~%" (puri:uri auth-uri))
+          (lparallel:future
+            (format t "If the redirection in the browser failed, paste the value of the oauth_verifier parameter from the URL here:~%")
+            (lparallel.queue:push-queue (read-line) *queue*))
+          (let ((oauth-verifier (lparallel.queue:pop-queue *queue*)))
+            (cl-oauth:authorize-request-token request-token)
+            (setf (cl-oauth:request-token-verification-code request-token) oauth-verifier)
+            (let ((access-token (cl-oauth:obtain-access-token *get-access-token-endpoint* request-token)))
+              (with-open-file (f "~/.g-tumblr-config.lisp" :direction :output :if-exists :new-version)
+                (write (list :consumer-key (cl-oauth:token-key consumer-token)
+                             :consumer-secret (cl-oauth:token-secret consumer-token)
+                             :access-key (cl-oauth:token-key access-token)
+                             :access-secret (cl-oauth:token-secret access-token))
+                       :stream f)))))))))
 
 (defun post-image (pathname)
   (format t "pathname: ~A~%" pathname)

@@ -6,8 +6,12 @@
                :local-time
                :temporary-file
                :zpb-exif
+               :hunchentoot
+               :lparallel
+               :inferior-shell
                :cl-gd
-               :cl-oauth)
+               :cl-oauth
+               :yason)
   :components ((:file "dpof")
                (:file "mount-notification")
                (:file "g-tumblr")))
