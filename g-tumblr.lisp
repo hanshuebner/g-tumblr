@@ -2,7 +2,8 @@
 
 (defpackage :g-tumblr
   (:use :cl)
-  (:export #:main))
+  (:export #:main
+           #:configure))
 
 (in-package :g-tumblr)
 
@@ -126,7 +127,6 @@
                                              :request-method :post
                                              :user-parameters
                                              `(("type" . "photo")
-                                               ;; status: with data[0] parameters, 401
                                                ("data" . ,(alexandria:read-file-into-byte-vector rescaled-image-pathname))))
          :object-key-fn (lambda (js-name)
                           (or (find-symbol (string-upcase js-name) :keyword)
@@ -137,7 +137,8 @@
   (let ((file (dpof:parse-file pathname)))
     (dolist (job (dpof:jobs file))
       (format t "process ~A (quantity ~A)~%" (dpof:image-pathname job) (dpof:quantity job))
-      (post-image (dpof:image-pathname job)))))
+      (print (post-image (dpof:image-pathname job)))))
+  (delete-file pathname))
 
 (defun volume-mounted (name)
   (format t "Volume ~A mounted~%" name)
