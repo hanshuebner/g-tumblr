@@ -17,4 +17,5 @@ implementations.
  * http://stackoverflow.com/questions/12409458/detect-when-a-volume-is-mounted-on-os-x
  * [DPOF summary](http://panasonic.jp/dc/dpof_110/white_e.htm)
  * [Python one-shot OAuth access token generator](https://gist.github.com/2603387)
+ * [How to encode images posted to tumblr](http://brainbackup.net/post/post-images-to-tumblr-using-phonegap-and-jsoauth.html)
 

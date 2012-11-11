@@ -114,32 +114,24 @@
                                          :key access-key
                                          :secret access-secret)))))
 
-(defun url-encode-octets (octets)
-  "URL-encode a string."
-  (with-output-to-string (s)
-    (loop for octet across octets
-          for c = (code-char octet)     ; ugh
-          do (cond
-               ((or (char<= #\0 c #\9)
-                    (char<= #\a c #\z)
-                    (char<= #\A c #\Z)
-                    (find c "$-_.!*'()," :test #'char=))
-                (write-char c s))
-               (t (format s "%~2,'0x" octet))))))
-
 (defun post-image (pathname)
   (format t "pathname: ~A~%" pathname)
   (temporary-file:with-open-temporary-file (rescaled-image-pathname :template (format nil "temporary-files:%.~A" (pathname-type pathname)))
     (normalize-image pathname rescaled-image-pathname)
     (let ((drakma:*text-content-types* '(("text" . nil) ("application" . "json"))))
       (destructuring-bind (&key blog-name access-token) (read-configuration)
-        (cl-oauth:access-protected-resource (format nil "https://api.tumblr.com/v2/blog/~A.tumblr.com/post" blog-name)
-                                            access-token
-                                            :request-method :post
-                                            :user-parameters `(("type" . "text")
-                                                               ("body" . "he")
-                                                               ;; status: with data[0] parameters, 401
-                                                               ("data[0]" . ,(url-encode-octets (alexandria:read-file-into-byte-vector rescaled-image-pathname)))))))))
+        (yason:parse
+         (cl-oauth:access-protected-resource (format nil "https://api.tumblr.com/v2/blog/~A.tumblr.com/post" blog-name)
+                                             access-token
+                                             :request-method :post
+                                             :user-parameters
+                                             `(("type" . "photo")
+                                               ;; status: with data[0] parameters, 401
+                                               ("data" . ,(alexandria:read-file-into-byte-vector rescaled-image-pathname))))
+         :object-key-fn (lambda (js-name)
+                          (or (find-symbol (string-upcase js-name) :keyword)
+                              js-name))
+         :object-as :plist)))))
 
 (defun process-print-requests (pathname)
   (let ((file (dpof:parse-file pathname)))

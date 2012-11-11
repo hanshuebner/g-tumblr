@@ -9,9 +9,9 @@
                :hunchentoot
                :lparallel
                :inferior-shell
+               :yason
                :cl-gd
-               :cl-oauth
-               :yason)
+               :cl-oauth)
   :components ((:file "dpof")
                (:file "mount-notification")
                (:file "g-tumblr")))
